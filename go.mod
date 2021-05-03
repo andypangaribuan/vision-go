@@ -1,4 +1,4 @@
-module vision
+module github.com/andypangaribuan/vision-go
 
 go 1.16
 
