@@ -1,9 +1,9 @@
 package test
 
 import (
+	"github.com/andypangaribuan/vision-go"
+	"github.com/andypangaribuan/vision-go/vis"
 	"testing"
-	"vision"
-	"vision/vis"
 )
 
 

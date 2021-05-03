@@ -1,11 +1,11 @@
 package util
 
 import (
+	"github.com/andypangaribuan/vision-go/models"
+	"github.com/andypangaribuan/vision-go/vis"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"strings"
-	"vision/models"
-	"vision/vis"
 )
 
 

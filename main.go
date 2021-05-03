@@ -1,8 +1,8 @@
 package vision
 
 import (
-	"vision/core/util"
-	"vision/vis"
+	"github.com/andypangaribuan/vision-go/core/util"
+	"github.com/andypangaribuan/vision-go/vis"
 )
 
 

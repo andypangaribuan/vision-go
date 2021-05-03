@@ -1,6 +1,6 @@
 package vis
 
-import "vision/models"
+import "github.com/andypangaribuan/vision-go/models"
 
 
 /* ============================================
