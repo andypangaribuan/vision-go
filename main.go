@@ -18,8 +18,7 @@ import (
 	Created by andy pangaribuan on 2021/05/03
 	Copyright andypangaribuan. All rights reserved.
    ============================================ */
-//goland:noinspection GoUnusedExportedFunction
-func Initialize() {
+func init() {
 	vis.Db = db.Db
 	vis.Env = env.Env
 	vis.Http = http.Http
@@ -30,3 +29,6 @@ func Initialize() {
 	vis.Convert = convert.Convert
 	vis.Util = util.Util
 }
+
+//goland:noinspection GoUnusedExportedFunction
+func Initialize() { }
