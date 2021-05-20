@@ -1,15 +1,16 @@
-package util
+package log
 
 
 /* ============================================
-	Created by andy pangaribuan on 2021/05/03
+	Created by andy pangaribuan on 2021/05/18
 	Copyright andypangaribuan. All rights reserved.
    ============================================ */
-var Util *utilStruct
+var Log *logStruct
+
 
 func init() {
-	Util = &utilStruct{}
+	Log = &logStruct{}
 }
 
 
-type utilStruct struct { }
+type logStruct struct { }

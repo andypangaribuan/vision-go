@@ -1,10 +1,13 @@
 package util
 
 import (
+	"bufio"
 	"github.com/andypangaribuan/vision-go/models"
 	"github.com/andypangaribuan/vision-go/vis"
 	"github.com/pkg/errors"
 	"io/ioutil"
+	"os"
+	"sort"
 	"strings"
 )
 
@@ -13,7 +16,7 @@ import (
 	Created by andy pangaribuan on 2021/05/03
 	Copyright andypangaribuan. All rights reserved.
    ============================================ */
-func (*VS) GetFileExtension(fileName string) string {
+func (*utilStruct) GetFileExtension(fileName string) string {
 	idx := strings.LastIndex(fileName, ".")
 	if idx < 0 {
 		return ""
@@ -22,8 +25,9 @@ func (*VS) GetFileExtension(fileName string) string {
 }
 
 
-func (slf *VS) ScanFiles(recursively bool, limit int, dirPath string, extensions []string, condition func(file models.FileScan) (include bool)) (files []models.FileScan, err error) {
-	files = make([]models.FileScan, 0)
+func (slf *utilStruct) ScanDir(includeDirectory, recursively bool, limit int, directoryPath string, extensions []string, condition func(model models.DirScan) (include bool)) (fns chan func()(*models.DirScan, error)) {
+	fns = make(chan func()(*models.DirScan, error))
+	totalModel := 0
 
 	mapExtensions := make(map[string]interface{}, 0)
 	for i:=0; i<len(extensions); i++ {
@@ -31,10 +35,10 @@ func (slf *VS) ScanFiles(recursively bool, limit int, dirPath string, extensions
 		mapExtensions[extensions[i]] = nil
 	}
 
-	if len(dirPath) > 0 {
-		length := len(dirPath)
-		if dirPath[length-1:] == vis.Const.PathSeparator {
-			dirPath = dirPath[:length-1]
+	if len(directoryPath) > 0 {
+		length := len(directoryPath)
+		if directoryPath[length-1:] == vis.Const.PathSeparator {
+			directoryPath = directoryPath[:length-1]
 		}
 	}
 
@@ -53,81 +57,177 @@ func (slf *VS) ScanFiles(recursively bool, limit int, dirPath string, extensions
 	}
 
 
-	getFileModel := func(dirPath, fileName string) models.FileScan {
-		model := models.FileScan{
-			FileName:  fileName,
-			Extension: slf.GetFileExtension(fileName),
-			FilePath:  dirPath + vis.Const.PathSeparator + fileName,
-			DirPath:   dirPath,
+	getModel := func(isDir bool, dirPath, fileName string) (model models.DirScan) {
+		model = models.DirScan{
+			IsDirectory: isDir,
+			DirPath:     dirPath,
 		}
 
-		if idx := strings.LastIndex(fileName, "."); idx >= 0 {
-			model.FileNameWithoutExtension = fileName[:idx]
-		} else {
-			model.FileNameWithoutExtension = fileName
+		if !isDir {
+			model.FileName = fileName
+			model.FileExtension = slf.GetFileExtension(fileName)
+			model.FilePath = dirPath + vis.Const.PathSeparator + fileName
+
+			if idx := strings.LastIndex(fileName, "."); idx >= 0 {
+				model.FileNameWithoutExtension = fileName[:idx]
+			} else {
+				model.FileNameWithoutExtension = fileName
+			}
+
+			if info, err := os.Stat(model.FilePath); err == nil {
+				model.FileSize = info.Size()
+			}
 		}
 
-		if idx := strings.LastIndex(dirPath, "/"); idx >= 0 {
+		if idx := strings.LastIndex(dirPath, vis.Const.PathSeparator); idx >= 0 {
 			model.DirName = dirPath[idx+1:]
 		} else {
 			model.DirName = dirPath
 		}
-
-		return model
+		return
 	}
 
 
-	var readDir func(dirPath string) error
-	readDir = func(dirPath string) error {
-		fileInfos, err := ioutil.ReadDir(dirPath)
+	var doScan func(dirPath string) error
+	doScan = func(dirPath string) error {
+		infos, err := ioutil.ReadDir(dirPath)
 		if err != nil {
-			return errors.WithStack(err)
+			err = errors.WithStack(err)
+			fns <- func() (*models.DirScan, error) { return nil, err }
+			return err
 		}
 
-		dirs := make([]string, 0)
-		for _, file := range fileInfos {
-			if len(files) >= limit && limit != -1 {
+		sort.Slice(infos, func(i, j int) bool {
+			if infos[i].IsDir() && !infos[j].IsDir() {
+				return false
+			}
+			return infos[i].Name() < infos[j].Name()
+		})
+
+		for _, info := range infos {
+			if limit != -1 && totalModel >= limit {
 				break
 			}
 
-			if file.IsDir() {
-				path := dirPath + vis.Const.PathSeparator + file.Name()
-				dirs = append(dirs, path)
-				continue
-			}
-
-			if file.Size() > 0 {
-				canAddFile := canAddFileByExtension(file.Name())
-				fileScan := getFileModel(dirPath, file.Name())
-				if canAddFile && condition != nil {
-					canAddFile = condition(fileScan)
+			if info.IsDir() {
+				path := dirPath + vis.Const.PathSeparator + info.Name()
+				if includeDirectory {
+					model := getModel(true, path, "")
+					canAdd := true
+					if condition != nil {
+						canAdd = condition(model)
+					}
+					if canAdd {
+						fns <- func() (*models.DirScan, error) { return &model, nil }
+						totalModel++
+					}
 				}
-				if canAddFile {
-					files = append(files, fileScan)
+				if recursively {
+					if err := doScan(path); err != nil {
+						return err
+					}
 				}
-			}
-		}
-
-		if !recursively {
-			return nil
-		}
-
-		if len(files) < limit || limit == -1 {
-			for _, dir := range dirs {
-				err := readDir(dir)
-				if err != nil {
-					return err
+			} else {
+				canAdd := canAddFileByExtension(info.Name())
+				model := getModel(false, dirPath, info.Name())
+				if canAdd && condition != nil {
+					canAdd = condition(model)
 				}
-
-				if len(files) >= limit && limit != -1 {
-					break
+				if canAdd {
+					fns <- func() (*models.DirScan, error) { return &model, nil }
+					totalModel++
 				}
 			}
 		}
-
 		return nil
 	}
 
-	err = readDir(dirPath)
+	go func() {
+		_ = doScan(directoryPath)
+		close(fns)
+	}()
+	return
+}
+
+
+func (slf *utilStruct) CountFileLines(filePath string) (count int, err error) {
+	file, _err := os.Open(filePath)
+	if _err != nil {
+		return 0, errors.WithStack(_err)
+	}
+	defer file.Close()
+
+	switch info, err := file.Stat(); {
+	case err != nil:
+		return 0, errors.WithStack(err)
+	case info.Size() == 0:
+		return 0, nil
+	}
+
+	reader := bufio.NewReader(file)
+	for {
+		_, err := reader.ReadString('\n')
+		count++
+		if err != nil {
+			return count, nil
+		}
+	}
+}
+
+
+func (slf *utilStruct) ScanFileLines(filePath string) (scan chan func()(isLast bool, index int, line string), err error) {
+	canClose := true
+	scan = make(chan func()(isLast bool, index int, line string))
+	defer func() {
+		if canClose {
+			close(scan)
+		}
+	}()
+
+	file, _err := os.Open(filePath)
+	if _err != nil {
+		return scan, errors.WithStack(_err)
+	}
+	defer func() {
+		if canClose {
+			file.Close()
+		}
+	}()
+
+	switch info, err := file.Stat(); {
+	case err != nil:
+		return scan, errors.WithStack(err)
+	case info.Size() == 0:
+		return scan, nil
+	}
+
+	doScan := func() {
+		reader := bufio.NewReader(file)
+		index := -1
+		for {
+			index++
+			idx := index //prevent updated value from var index
+			line, err := reader.ReadString('\n')
+			line = strings.Replace(line, "\n", "", 1)
+
+			if err == nil {
+				scan <- func() (bool, int, string) {
+					return false, idx, line
+				}
+			} else {
+				scan <- func() (bool, int, string) {
+					return true, idx, line
+				}
+				break
+			}
+		}
+	}
+
+	canClose = false
+	go func() {
+		doScan()
+		close(scan)
+		file.Close()
+	}()
 	return
 }

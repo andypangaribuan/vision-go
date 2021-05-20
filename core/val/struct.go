@@ -1,15 +1,16 @@
-package util
+package val
 
 
 /* ============================================
-	Created by andy pangaribuan on 2021/05/03
+	Created by andy pangaribuan on 2021/05/18
 	Copyright andypangaribuan. All rights reserved.
    ============================================ */
-var Util *utilStruct
+var Val *valStruct
+
 
 func init() {
-	Util = &utilStruct{}
+	Val = &valStruct{}
 }
 
 
-type utilStruct struct { }
+type valStruct struct { }

@@ -1,15 +1,16 @@
-package util
+package env
 
 
 /* ============================================
-	Created by andy pangaribuan on 2021/05/03
+	Created by andy pangaribuan on 2021/05/18
 	Copyright andypangaribuan. All rights reserved.
    ============================================ */
-var Util *utilStruct
+var Env *envStruct
+
 
 func init() {
-	Util = &utilStruct{}
+	Env = &envStruct{}
 }
 
 
-type utilStruct struct { }
+type envStruct struct { }

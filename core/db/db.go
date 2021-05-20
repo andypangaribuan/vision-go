@@ -1,15 +1,17 @@
-package util
+package db
 
 
 /* ============================================
-	Created by andy pangaribuan on 2021/05/03
+	Created by andy pangaribuan on 2021/05/18
 	Copyright andypangaribuan. All rights reserved.
    ============================================ */
-var Util *utilStruct
+var Db *dbStruct
+
+const (
+	dbTypePostgres = "postgresql"
+	dbTypeMySql    = "mysql"
+)
 
 func init() {
-	Util = &utilStruct{}
+	Db = &dbStruct{}
 }
-
-
-type utilStruct struct { }

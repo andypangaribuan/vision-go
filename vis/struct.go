@@ -1,6 +1,6 @@
 package vis
 
-import "github.com/andypangaribuan/vision-go/models"
+import "time"
 
 
 /* ============================================
@@ -11,8 +11,15 @@ type constVariable struct {
 	PathSeparator string
 }
 
+type storeStruct struct {
+	ServiceName                   string
+	ServiceVersion                string
+	CLogBaseUrl                   string
+	CLogMaxConcurrentConnection   int
+	CLogQueueEngineLogPrintEnable bool
+	LogPrintEnabled               bool
+}
 
-type iUtil interface {
-	GetFileExtension(fileName string) string
-	ScanFiles(recursively bool, limit int, dirPath string, extensions []string, condition func(file models.FileScan) (include bool)) (files []models.FileScan, err error)
+type confStruct struct {
+	DefaultHttpRequestTimeout time.Duration // default: 3 minute
 }

@@ -1,15 +1,8 @@
-package util
+package api
 
 
 /* ============================================
-	Created by andy pangaribuan on 2021/05/03
+	Created by andy pangaribuan on 2021/05/18
 	Copyright andypangaribuan. All rights reserved.
    ============================================ */
-var Util *utilStruct
-
-func init() {
-	Util = &utilStruct{}
-}
-
-
-type utilStruct struct { }
+type HandlerFunc func(Context) error
