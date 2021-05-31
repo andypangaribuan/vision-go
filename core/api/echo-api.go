@@ -61,6 +61,12 @@ func (slf *EchoApi) POST(path string, handler HandlerFunc) {
 	})
 }
 
+func (slf *EchoApi) POSTS(endpoint map[string]HandlerFunc) {
+	for k, v := range endpoint {
+		slf.POST(k, v)
+	}
+}
+
 
 func (slf *EchoApi) Group(path string, group func(g *GroupApi)) {
 	g := &GroupApi{
@@ -72,6 +78,12 @@ func (slf *EchoApi) Group(path string, group func(g *GroupApi)) {
 
 func (slf *GroupApi) POST(path string, handler HandlerFunc) {
 	slf.ea.POST(slf.path + path, handler)
+}
+
+func (slf *GroupApi) POSTS(endpoint map[string]HandlerFunc) {
+	for k, v := range endpoint {
+		slf.POST(k, v)
+	}
 }
 
 func (slf *GroupApi) Group(path string, group func(g *GroupApi)) {

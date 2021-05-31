@@ -70,8 +70,16 @@ func Test_ApiWithoutMiddleware(t *testing.T) {
 	//e.POST(postPath, fn)
 
 	// group post
+	//e.Group("/private", func(g *api.GroupApi) {
+	//	g.POST("/v1", fn)
+	//})
+
+	// group, using posts
 	e.Group("/private", func(g *api.GroupApi) {
-		g.POST("/v1", fn)
+		g.POSTS(map[string]api.HandlerFunc{
+			"/v1":              fn,
+			"/data-management": fn,
+		})
 	})
 
 	serverSixSeconds(e)
