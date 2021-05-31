@@ -60,10 +60,18 @@ func Test_ApiWithoutMiddleware(t *testing.T) {
 
 	e := api.BuildEcho(apiPort, nil)
 
-	e.POST(postPath, func(c api.Context) error {
+	fn := func(c api.Context) error {
 		timeNow := timeNow()
 		t.Logf("called: %v", timeNow)
 		return c.ResponseStr(http.StatusOK, timeNow)
+	}
+
+	// single post
+	//e.POST(postPath, fn)
+
+	// group post
+	e.Group("/private", func(g *api.GroupApi) {
+		g.POST("/v1", fn)
 	})
 
 	serverSixSeconds(e)

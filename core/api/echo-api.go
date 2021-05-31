@@ -60,3 +60,24 @@ func (slf *EchoApi) POST(path string, handler HandlerFunc) {
 		return handler(ctx)
 	})
 }
+
+
+func (slf *EchoApi) Group(path string, group func(g *GroupApi)) {
+	g := &GroupApi{
+		ea:   slf,
+		path: path,
+	}
+	group(g)
+}
+
+func (slf *GroupApi) POST(path string, handler HandlerFunc) {
+	slf.ea.POST(slf.path + path, handler)
+}
+
+func (slf *GroupApi) Group(path string, group func(g *GroupApi)) {
+	g := &GroupApi{
+		ea:   slf.ea,
+		path: slf.path + path,
+	}
+	group(g)
+}

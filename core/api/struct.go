@@ -24,3 +24,8 @@ type EchoApi struct {
 	port int
 	e    *echo.Echo
 }
+
+type GroupApi struct {
+	ea   *EchoApi
+	path string
+}
