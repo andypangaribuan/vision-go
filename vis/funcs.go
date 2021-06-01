@@ -87,20 +87,20 @@ type iConvert interface {
 	BytesLengthToHumanReadable(length int64, decimal int) string
 
 	// fr: time.go
-	RemoveUnIntTime(value string) string
-	TimeNowUtcMicros() (dt time.Time, dts string)
+	RemoveUnIntTime(value string) string // remove "-", " ", ":", "."
+	TimeNowUtcMicros() (dt time.Time, dts string) // dts: yyyy-MM-dd HH:mm:ss.SSSSSS
 	UnixMicro(val time.Time) int64
 	UnixMicroNowTimeZone(zone int) int64
-	TimeToStr(tm time.Time, format string) string
-	TimeToStrDate(tm time.Time) string
-	TimeToStrFull(tm time.Time) string
-	TimeToStrMillis(tm time.Time) string
-	TimeToStrMicros(tm time.Time) string
-	StrToTime(layout string, value string) (tm time.Time, err error)
-	StrToTimeDate(value string) (tm time.Time, err error)
-	StrToTimeFull(value string) (tm time.Time, err error)
-	StrToTimeMillis(value string) (tm time.Time, err error)
-	StrToTimeMicros(value string) (tm time.Time, err error)
+	TimeToStr(tm time.Time, format string) string // format: yyyy-MM-dd HH:mm:ss.SSSSSS
+	TimeToStrDate(tm time.Time) string // yyyy-MM-dd
+	TimeToStrFull(tm time.Time) string // yyyy-MM-dd HH:mm:ss
+	TimeToStrMillis(tm time.Time) string // yyyy-MM-dd HH:mm:ss.SSS
+	TimeToStrMicros(tm time.Time) string // yyyy-MM-dd HH:mm:ss.SSSSSS
+	StrToTime(layout string, value string) (tm time.Time, err error) // layout: yyyy-MM-dd HH:mm:ss.SSSSSS
+	StrToTimeDate(value string) (tm time.Time, err error) // value format: yyyy-MM-dd
+	StrToTimeFull(value string) (tm time.Time, err error) // value format: yyyy-MM-dd HH:mm:ss
+	StrToTimeMillis(value string) (tm time.Time, err error) // value format: yyyy-MM-dd HH:mm:ss.SSS
+	StrToTimeMicros(value string) (tm time.Time, err error) // value format: yyyy-MM-dd HH:mm:ss.SSSSSS
 }
 
 
